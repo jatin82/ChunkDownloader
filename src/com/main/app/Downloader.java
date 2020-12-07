@@ -65,9 +65,18 @@ public class Downloader {
         if (file.exists()) {
             startByte = file.length() + 1;
         } else startByte = 0;
-        saveFileFromResource(fileName,startByte,totalByte);
+
+        updateStartByte(startByte);
+        saveFileFromResource(fileName, startByte, totalByte);
     }
 
+
+    private static void updateStartByte(long startByte) {
+        String rangeValue = headerProperties.getProperty(range);
+        rangeValue = rangeValue.replace("{startByte}", startByte + "");
+        terminalCMD.log("Updating headers with startValue :" + rangeValue);
+        headerProperties.setProperty(range, rangeValue);
+    }
 
     private static void saveFileFromResource(String fileName, long startByte, long totalByte) throws Exception {
         InputStream stream = buildAndExecuteRequest();
@@ -77,7 +86,7 @@ public class Downloader {
         while ((data = stream.read()) != -1) {
             fos.write(data);
             count++;
-            logProgress(count,totalByte);
+            logProgress(count, totalByte);
         }
         fos.close();
     }
@@ -94,7 +103,7 @@ public class Downloader {
 
         HttpResponse response = client.execute(request);
 
-        if (response.getStatusLine().getStatusCode() >=300) {
+        if (response.getStatusLine().getStatusCode() >= 300) {
             throw new Exception("File download failed response code" + response.getStatusLine().getStatusCode() + " URL:" + properties.getProperty(downloadURL));
         }
 
@@ -102,15 +111,15 @@ public class Downloader {
         return entity.getContent();
     }
 
-    private static void logProgress(long completedByte, long totalByte){
-        double progress = (Double.valueOf(completedByte)/Double.valueOf(totalByte))  * 100D;
-        terminalCMD.log("[DOWNLOAD] COMPLETED : "+formatDecimal(progress,2)+" %",true);
+    private static void logProgress(long completedByte, long totalByte) {
+        double progress = (Double.valueOf(completedByte) / Double.valueOf(totalByte)) * 100D;
+        terminalCMD.log("[DOWNLOAD] COMPLETED : " + formatDecimal(progress, 2) + " %", true);
     }
 
 
     private static String formatDecimal(double decimalValue, int roundDigit) {
         double roundOff = Math.round(decimalValue * Math.pow(10, roundDigit)) / Math.pow(10, roundDigit);
-        return roundOff+"";
+        return roundOff + "";
     }
 
     private static void loadProperties() throws IOException {
@@ -120,10 +129,10 @@ public class Downloader {
         headerProperties.load(fis);
     }
 
-    private static void initDirs(){
+    private static void initDirs() {
         String fileDirs = properties.getProperty(fileToSavePath);
         File file = new File(fileDirs);
-        if(!file.isDirectory()){
+        if (!file.isDirectory()) {
             file.mkdir();
         }
     }
