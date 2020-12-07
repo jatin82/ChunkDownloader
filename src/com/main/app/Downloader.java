@@ -104,7 +104,7 @@ public class Downloader {
 
     private static void logProgress(long completedByte, long totalByte){
         double progress = (Double.valueOf(completedByte)/Double.valueOf(totalByte))  * 100D;
-        terminalCMD.log("[DOWNLOAD] COMPLETED : "+formatDecimal(progress,2),true);
+        terminalCMD.log("[DOWNLOAD] COMPLETED : "+formatDecimal(progress,2)+" %",true);
     }
 
 

@@ -12,9 +12,19 @@ public class FileLogger {
 
     private File file;
 
+    private String clearLine;
+
+    private int lastOutSize;
+
     public FileLogger(String fileName) throws IOException {
         file = new File(fileName);
         writer = new BufferedWriter(new FileWriter(file));
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<100;i++){
+            sb.append(' ');
+        }
+        clearLine = sb.append('\r').toString();
+        lastOutSize = 0;
     }
 
 
@@ -31,7 +41,9 @@ public class FileLogger {
             writer.write(new Date().toString()+" :: "+str+"\n");
             str+="\n";
         }
+        if(lastOutSize > str.length()) System.out.print(clearLine);
         System.out.print(new Date().toString()+" :: "+str);
+        lastOutSize = str.length();
     }
 
     public void close() throws IOException {
