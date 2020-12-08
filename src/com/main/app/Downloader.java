@@ -2,6 +2,7 @@ package com.main.app;
 
 import com.main.app.utils.FileLogger;
 import com.main.app.utils.TerminalCMD;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -27,6 +28,8 @@ public class Downloader {
     static String downloadURL = "download.url";
 
     static String range = "range";
+
+    static String START = "startByte";
 
     static Properties properties = new Properties();
     static Properties headerProperties = new Properties();
@@ -61,10 +64,14 @@ public class Downloader {
         long startByte = 0L;
         long totalByte = Long.parseLong(headerProperties.getProperty(range).split("-")[1]);
 
-        File file = new File(fileName);
-        if (file.exists()) {
-            startByte = file.length() + 1;
-        } else startByte = 0;
+        if(properties.getProperty(START).isEmpty()){
+            File file = new File(fileName);
+            if (file.exists()) {
+                startByte = file.length();
+            } else startByte = 0;
+        } else {
+            startByte = Long.parseLong(properties.getProperty(START));
+        }
 
         updateStartByte(startByte);
         saveFileFromResource(fileName, startByte, totalByte);
@@ -91,15 +98,38 @@ public class Downloader {
         fos.close();
     }
 
+    // TODO: headers are only passed while creating request this method fails to do that
+    private static InputStream buildAndExecuteRequest2() throws Exception {
+        CloseableHttpClient client = HttpClients.custom().build();
+        RequestBuilder requestBuilder = RequestBuilder.get()
+                .setUri(properties.getProperty(downloadURL));
+
+        for (Object headerKey : headerProperties.keySet()) {
+            requestBuilder = requestBuilder.setHeader(headerKey.toString(), headerProperties.getProperty(headerKey.toString()));
+        }
+        HttpUriRequest request = requestBuilder.build();
+        for(Header header : request.getAllHeaders()){
+            System.out.println(header.getElements()[0].toString());
+        }
+
+
+        HttpResponse response = client.execute(request);
+
+        if (response.getStatusLine().getStatusCode() >= 300) {
+            throw new Exception("File download failed response code" + response.getStatusLine().getStatusCode() + " URL:" + properties.getProperty(downloadURL));
+        }
+
+        HttpEntity entity = response.getEntity();
+        return entity.getContent();
+    }
+
+
     private static InputStream buildAndExecuteRequest() throws Exception {
         CloseableHttpClient client = HttpClients.custom().build();
         HttpUriRequest request = RequestBuilder.get()
                 .setUri(properties.getProperty(downloadURL))
+                .setHeader("range",headerProperties.getProperty("range"))
                 .build();
-
-        for (Object headerKey : headerProperties.keySet()) {
-            request.setHeader(headerKey.toString(), headerProperties.getProperty(headerKey.toString()));
-        }
 
         HttpResponse response = client.execute(request);
 
