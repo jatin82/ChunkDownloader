@@ -46,6 +46,12 @@ public class FileLogger {
         lastOutSize = str.length();
     }
 
+    public void rawLog(String str) throws IOException {
+        str = new Date().toString()+" :: "+str;
+        writer.write(str);
+        System.out.print(str);
+    }
+
     public void close() throws IOException {
         writer.close();
     }

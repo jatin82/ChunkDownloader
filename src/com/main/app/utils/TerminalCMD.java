@@ -35,6 +35,14 @@ public class TerminalCMD {
             e.printStackTrace();
         }
     }
+    public void rawLog(String str) {
+        try {
+            logger.rawLog(str);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public String runBulk(List<String> commands) throws IOException, InterruptedException {
         ProcessBuilder builder = getDefualtBuilder();
