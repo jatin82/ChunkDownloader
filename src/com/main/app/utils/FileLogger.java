@@ -16,6 +16,10 @@ public class FileLogger {
 
     private int lastOutSize;
 
+    private static long threshold = 200000L;
+
+    private long logCount;
+
     public FileLogger(String fileName) throws IOException {
         file = new File(fileName);
         writer = new BufferedWriter(new FileWriter(file));
@@ -25,6 +29,7 @@ public class FileLogger {
         }
         clearLine = sb.append('\r').toString();
         lastOutSize = 0;
+        logCount = 0L;
     }
 
 
@@ -35,6 +40,12 @@ public class FileLogger {
 
     public void log(String str,boolean... isSingleLine) throws IOException {
         if(isSingleLine.length>0 && isSingleLine[0]) {
+            if(isSingleLine.length==2 && isSingleLine[1]){
+                logCount++;
+                if(logCount<threshold){
+                    return;
+                }
+            }
             str+="\r";
         }
         else {
@@ -44,6 +55,7 @@ public class FileLogger {
         if(lastOutSize > str.length()) System.out.print(clearLine);
         System.out.print(new Date().toString()+" :: "+str);
         lastOutSize = str.length();
+        logCount = logCount % threshold;
     }
 
     public void rawLog(String str) throws IOException {
