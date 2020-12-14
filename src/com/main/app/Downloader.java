@@ -171,7 +171,6 @@ public class Downloader {
         fis = new FileInputStream(headersFile);
         headerProperties.load(fis);
         replaceDynamicProperties(properties);
-        replaceDynamicProperties(headerProperties);
     }
 
     private static void replaceDynamicProperties(Properties properties) {
@@ -181,7 +180,7 @@ public class Downloader {
             String quotedStr = "{" + str + "}";
             for (Object key : properties.keySet()) {
                 String value = properties.get(key).toString();
-                value = value.replaceAll(quotedStr, properties.getProperty(str));
+                value = value.replace(quotedStr, properties.getProperty(str));
                 properties.setProperty(key.toString(), value);
             }
         }
