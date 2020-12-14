@@ -33,6 +33,10 @@ public class Downloader {
 
     static String START = "startByte";
 
+    static String REPLACE_PROPERTIES = "replace.properties";
+
+    static String SPLITTER = ";";
+
     static Properties properties = new Properties();
     static Properties headerProperties = new Properties();
 
@@ -166,6 +170,21 @@ public class Downloader {
         properties.load(fis);
         fis = new FileInputStream(headersFile);
         headerProperties.load(fis);
+        replaceDynamicProperties(properties);
+        replaceDynamicProperties(headerProperties);
+    }
+
+    private static void replaceDynamicProperties(Properties properties) {
+        String[] dynamicProperties = properties.getProperty(REPLACE_PROPERTIES).split(SPLITTER);
+        properties.remove(REPLACE_PROPERTIES);
+        for (String str : dynamicProperties) {
+            String quotedStr = "{" + str + "}";
+            for (Object key : properties.keySet()) {
+                String value = properties.get(key).toString();
+                value = value.replaceAll(quotedStr, properties.getProperty(str));
+                properties.setProperty(key.toString(), value);
+            }
+        }
     }
 
     private static void initDirs() {
@@ -175,6 +194,5 @@ public class Downloader {
             file.mkdir();
         }
     }
-
 
 }
